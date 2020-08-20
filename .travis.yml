@@ -7,7 +7,7 @@ env:
   - IMAGE_NAME=einarvalur/unit-api
 
 script:
-    - docker-compose run --build test
+    - docker-compose up --build test
 
 before_deploy:
   - docker build --build-arg ENV=production -t "$IMAGE_NAME" .
