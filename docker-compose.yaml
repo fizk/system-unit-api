@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  unit-api:
+    build:
+      context: .
+      args:
+        - ENV=development
+    container_name: unit-api
+    ports:
+      - 8081:80
+    depends_on:
+        - unit-api-database
+    environment:
+        - DB_HOST=unit-api-database
+        - DB_DATABASE=unit-api
+    volumes:
+      - ./src:/var/www/src
+      - ./config:/var/www/config
+      - ./public:/var/www/public
+      - ./tests:/var/www/tests
+      - ./phpcs.xml:/var/www/phpcs.xml
+      - ./phpunit.xml:/var/www/phpunit.xml
+
+  unit-api-database:
+    image: mongo
+    container_name: unit-api-database
+    restart: always
+
+  test:
+    build:
+      context: .
+      args:
+        - ENV=development
+    container_name: unit-api-test
+    depends_on:
+        - unit-api-database
+    environment:
+        - DB_HOST=unit-api-database
+        - DB_DATABASE=unit-test
+    volumes:
+      - ./src:/var/www/src
+      - ./config:/var/www/config
+      - ./public:/var/www/public
+      - ./tests:/var/www/tests
+      - ./phpcs.xml:/var/www/phpcs.xml
+      - ./phpunit.xml:/var/www/phpunit.xml
+    command: bash -c "./vendor/bin/phpunit && ./vendor/bin/phpcs --standard=./phpcs.xml ./src"
