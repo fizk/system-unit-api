@@ -59,6 +59,16 @@ return [
                 ->setReferenceService($container->get(Service\Reference::class))
                 ;
         },
+        Handler\PostReference::class => function(ContainerInterface $container, $requestedName) {
+            return (new Handler\PostReference())
+                ->setReferenceService($container->get(Service\Reference::class))
+                ;
+        },
+        Handler\DeleteReference::class => function(ContainerInterface $container, $requestedName) {
+            return (new Handler\DeleteReference())
+                ->setReferenceService($container->get(Service\Reference::class))
+                ;
+        },
 
         Service\Unit::class => function (ContainerInterface $container, $requestedName) {
             return (new Service\Unit())

@@ -2,7 +2,6 @@
 
 namespace Unit\Handler;
 
-use InvalidArgumentException;
 use Laminas\Diactoros\Response\EmptyResponse;
 use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
 use Psr\Http\Server\RequestHandlerInterface;
@@ -14,7 +13,10 @@ class PatchUnit implements RequestHandlerInterface, UnitAware
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $response = $this->unitService->patch($request->getAttribute('id'), $request->getParsedBody());
+        $response = $this->unitService->patch(
+            $request->getAttribute('unit_id'),
+            $request->getParsedBody()
+        );
         return $response
             ? new EmptyResponse(204)
             : new EmptyResponse(400);

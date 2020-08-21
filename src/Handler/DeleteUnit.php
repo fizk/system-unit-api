@@ -2,7 +2,6 @@
 
 namespace Unit\Handler;
 
-use InvalidArgumentException;
 use Laminas\Diactoros\Response\EmptyResponse;
 use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
 use Psr\Http\Server\RequestHandlerInterface;
@@ -14,7 +13,7 @@ class DeleteUnit implements RequestHandlerInterface, UnitAware
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $response = $this->unitService->delete($request->getAttribute('id'));
+        $response = $this->unitService->delete($request->getAttribute('unit_id'));
         return $response
             ? new EmptyResponse(204)
             : new EmptyResponse(404);

@@ -2,7 +2,6 @@
 
 namespace Unit\Handler;
 
-use InvalidArgumentException;
 use Laminas\Diactoros\Response\EmptyResponse;
 use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
 use Psr\Http\Server\RequestHandlerInterface;
@@ -16,7 +15,7 @@ class PostUnit implements RequestHandlerInterface, UnitAware
     {
         $response = $this->unitService->post($request->getParsedBody());
         return $response
-            ? (new EmptyResponse(204))->withHeader('Location', "/units/{$response}")
+            ? (new EmptyResponse(201))->withHeader('Location', "/units/{$response}")
             : new EmptyResponse(400);
     }
 

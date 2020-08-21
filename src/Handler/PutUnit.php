@@ -2,7 +2,6 @@
 
 namespace Unit\Handler;
 
-use InvalidArgumentException;
 use Laminas\Diactoros\Response\EmptyResponse;
 use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
 use Psr\Http\Server\RequestHandlerInterface;
@@ -15,7 +14,7 @@ class PutUnit implements RequestHandlerInterface, UnitAware
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $response = $this->unitService->put(
-            $request->getAttribute('id'),
+            $request->getAttribute('unit_id'),
             $request->getParsedBody()
         );
 

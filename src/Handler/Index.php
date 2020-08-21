@@ -15,14 +15,14 @@ class Index implements RequestHandlerInterface
             'endpoints' => [
                 '/units' => [
                     'params' => [],
-                    'query' => [
-                        'filter' => 'mime regex',
-                        'ids' => 'comma seperated list of IDs',
-                    ],
                     'get' => [
+                        'query' => [
+                            'filter' => 'mime regex',
+                            'ids' => 'comma seperated list of IDs',
+                        ],
                         'request' => [],
                         'response' => [
-                            200 => 'array of @Unit'
+                            200 => '@Unit[]'
                         ],
                     ],
                     'post' => [
@@ -31,14 +31,14 @@ class Index implements RequestHandlerInterface
                             201 => 'created',
                             400 => 'error',
                             'headers' => [
-                                'Location' => '@string'
+                                'Location' => '@url'
                             ]
                         ],
                     ],
                 ],
-                '/units/{id}' => [
+                '/units/{unit_id}' => [
                     'params' => [
-                        'id' => '@string'
+                        'unit_id' => '@string'
                     ],
                     'get' => [
                         'request' => [],
@@ -75,11 +75,73 @@ class Index implements RequestHandlerInterface
                         ],
                     ],
                 ],
+                '/units/{unit_id}/references' => [
+                    'params' => [
+                        'unit_id' => '@string'
+                    ],
+                    'post' => [
+                        'request' => [
+                            '__unit' => '@string',
+                            '__mime' => '@string',
+                            '...' => 'data fields'
+                        ],
+                        'response' => [
+                            'headers' => [
+                                'Location' => '@url'
+                            ],
+                            201 => 'created',
+                            400 => 'error',
+                        ],
+                    ]
+                ],
+                '/units/{unit_id}/references/{ref_id}' => [
+                    'params' => [
+                        'unit_id' => '@string',
+                        'ref_id' => '@string',
+                    ],
+                    'put' => [
+                        'request' => [
+                            '__unit' => '@string',
+                            '__mime' => '@string',
+                            '...' => 'data fields'
+                        ],
+                        'response' => [
+                            200 => 'success',
+                            400 => 'error',
+                        ],
+                    ],
+                    'delete' => [
+                        'request' => [],
+                        'response' => [
+                            405 => 'not allowed',
+                        ],
+                    ]
+                ],
+                '/references/{ref_id}' => [
+                    'params' => [
+                        'ref_id' => '@string'
+                    ],
+                    'get' => [
+                        'query' => [
+                            'filter' => 'mime regex',
+                        ],
+                        'request' => [],
+                        'response' => [
+                            200 => '@Unit[]'
+                        ],
+                    ]
+                ]
             ],
             'models' => [
                 'Unit' => [
                     '_id' => '@string',
-                    '__ref' => '@array',
+                    '__ref' => '@Reference[]',
+                    '__mime' => '@string',
+                    '...' => 'data fields'
+                ],
+                'Reference' => [
+                    '_id' => '@string',
+                    '__unit' => '@string',
                     '__mime' => '@string',
                     '...' => 'data fields'
                 ]

@@ -8,10 +8,10 @@ use Laminas\Diactoros\Response\JsonResponse;
 use Laminas\HttpHandlerRunner\Emitter\EmitterInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Highway\{Route, RouteCollection};
-use Throwable;
-use RuntimeException;
-use LogicException;
 use Unit\Event\SystemError;
+use Throwable;
+use Exception;
+use Error;
 
 class Application
 {
@@ -37,6 +37,32 @@ class Application
             }
 
             $this->emitter->emit($collection->find($request)->dispatch($request));
+        } catch (Exception $e) {
+            $this->container->get(EventDispatcherInterface::class)->dispatch(new SystemError($e, 'EXCEPTION'));
+            $this->emitter->emit(new JsonResponse(
+                [
+                    'message' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'path' => "{$e->getFile()}:{$e->getLine()}",
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTrace()
+                ],
+                $e->getCode() > 199 ? $e->getCode() : 400
+            ));
+        } catch (Error $e) {
+            $this->container->get(EventDispatcherInterface::class)->dispatch(new SystemError($e, 'ERROR'));
+            $this->emitter->emit(new JsonResponse(
+                [
+                    'message' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'path' => "{$e->getFile()}:{$e->getLine()}",
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTrace()
+                ],
+                $e->getCode() > 199 ? $e->getCode() : 500
+            ));
         } catch (Throwable $e) {
             $this->container->get(EventDispatcherInterface::class)->dispatch(new SystemError($e, 'SYSTEM'));
             $this->emitter->emit(new JsonResponse(
@@ -53,37 +79,3 @@ class Application
         }
     }
 }
-
-/*
-Error
-   ArithmeticError
-      DivisionByZeroError
-   AssertionError
-   CompileError
-      ParseError
-   TypeError
-      ArgumentCountError
-Exception
-   ClosedGeneratorException
-   DOMException
-   ErrorException
-   IntlException
-   JsonException
-   LogicException
-      BadFunctionCallException
-         BadMethodCallException
-      DomainException
-      InvalidArgumentException
-      LengthException
-      OutOfRangeException
-   PharException
-   ReflectionException
-   RuntimeException
-      OutOfBoundsException
-      OverflowException
-      PDOException
-      RangeException
-      UnderflowException
-      UnexpectedValueException
-   SodiumException
-*/

@@ -14,7 +14,7 @@ class GetUnit implements RequestHandlerInterface, UnitAware
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $response = $this->unitService->get($request->getAttribute('id'));
+        $response = $this->unitService->get($request->getAttribute('unit_id'));
         return $response
             ? new JsonResponse($response, 200)
             : new EmptyResponse(404) ;

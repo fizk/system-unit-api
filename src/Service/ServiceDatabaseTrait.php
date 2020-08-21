@@ -25,7 +25,10 @@ trait ServiceDatabaseTrait
         return array_merge($item->getArrayCopy(), [
             '_id' => (string)$item->getArrayCopy()['_id'],
             '__ref' => array_map(function ($item) {
-                return array_merge($item->getArrayCopy(), ['_id' => (string) $item->getArrayCopy()['_id']]);
+                return array_merge($item->getArrayCopy(), [
+                    '__unit' => (string) $item->getArrayCopy()['__unit'],
+                    '_id' => (string) $item->getArrayCopy()['_id'],
+                    ]);
             }, (array) $item->getArrayCopy()['__ref']),
         ]);
     }
