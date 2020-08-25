@@ -2,6 +2,8 @@ FROM php:7.4.9-apache
 
 ARG ENV
 
+EXPOSE 80
+
 RUN apt-get update; \
     apt-get install -y --no-install-recommends \
     libzip-dev \
