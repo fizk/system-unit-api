@@ -11,6 +11,27 @@ class Reference implements DatabaseAware
 {
     use ServiceDatabaseTrait;
 
+    public function get(string $unitId, string $refId): ?array
+    {
+
+        $result = $this->getDriver()->selectCollection('unit')->aggregate([
+            ['$match' => ['_id' => new ObjectId($unitId)]],
+            ['$project' => [
+                'shapes' => ['$filter' => [
+                    'input' => '$__ref',
+                    'as' => 'shape',
+                    'cond' => ['$eq' => ['$$shape._id', new ObjectId($refId)]]
+                ]],
+                '_id' => 0
+            ]]
+        ]);
+
+        $response = $result->toArray();
+        return count($response)
+            ? $this->serializeReference($response[0]->getArrayCopy()['shapes']->getArrayCopy()[0])
+            : null ;
+    }
+
     public function fetch(string $id, ?string $filter = null): array
     {
         $result = $this->getDriver()->selectCollection('unit')->find([

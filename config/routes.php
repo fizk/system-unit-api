@@ -19,6 +19,7 @@ return [
     ],
     '/units/{unit_id}/references/{ref_id}' => [
         'PUT' => Unit\Handler\PutReference::class,
+        'GET' => Unit\Handler\GetReference::class,
         'DELETE' => Unit\Handler\DeleteReference::class,
     ],
     '/references/{ref_id}' => [

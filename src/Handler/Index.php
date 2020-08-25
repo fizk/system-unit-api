@@ -110,6 +110,13 @@ class Index implements RequestHandlerInterface
                             400 => 'error',
                         ],
                     ],
+                    'get' => [
+                        'request' => [],
+                        'response' => [
+                            200 => '@Reference',
+                            404 => 'unit not found',
+                        ],
+                    ],
                     'delete' => [
                         'request' => [],
                         'response' => [

@@ -11,6 +11,38 @@ class ReferenceTest extends TestCase
 {
     private ?Database $client;
 
+    public function testGet()
+    {
+        $this->client->selectCollection('unit')
+            ->insertMany([
+                [
+                    '_id' => new ObjectId('5f3c539b711e4cc306ac2b87'),
+                    '__ref' => [
+                        [
+                            '__unit' => new ObjectId('5f3cd6ef1950f736948b9ca4'),
+                            '_id' => new ObjectId('5f3ef8b2412bd93b4c41835f'),
+                            'name' => 'name 1'
+                        ],
+                        [
+                            '__unit' => new ObjectId('5f3cd6fb2dcf6de98bc4124f'),
+                            '_id' => new ObjectId('5f44ddaa3ac918ce758d047d'),
+                            'name' => 'name 2'
+                        ],
+                    ]
+                ],
+            ]);
+
+        $service = (new Reference())->setDriver($this->client);
+        $expected = [
+            '__unit' => '5f3cd6ef1950f736948b9ca4',
+            '_id' => '5f3ef8b2412bd93b4c41835f',
+            'name' => 'name 1'
+        ];
+        $actual = $service->get('5f3c539b711e4cc306ac2b87', '5f3ef8b2412bd93b4c41835f');
+
+        $this->assertEquals($expected, $actual);
+    }
+
     public function testFetchSuccess()
     {
         $this->client->selectCollection('unit')

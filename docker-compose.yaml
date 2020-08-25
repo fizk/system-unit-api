@@ -27,6 +27,11 @@ services:
     container_name: unit-api-database
     restart: always
 
+  unit-api-database-test:
+    image: mongo
+    container_name: unit-api-database-test
+    restart: always
+
   test:
     build:
       context: .
@@ -34,9 +39,9 @@ services:
         - ENV=development
     container_name: unit-api-test
     depends_on:
-        - unit-api-database
+        - unit-api-database-test
     environment:
-        - DB_HOST=unit-api-database
+        - DB_HOST=unit-api-database-test
         - DB_DATABASE=unit-test
     volumes:
       - ./src:/var/www/src

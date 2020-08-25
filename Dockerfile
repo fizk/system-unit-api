@@ -57,8 +57,8 @@ RUN if [ "$ENV" != "production" ] ; then \
     fi ;
 
 RUN if [ "$ENV" = "production" ] ; then \
-    composer install --prefer-source --no-interaction --no-dev --no-suggest -a \
-    && composer dump-autoload -a; \
+    composer install --prefer-source --no-interaction --no-dev --no-suggest -o \
+    && composer dump-autoload -o; \
     fi ;
 
 COPY ./phpunit.xml /var/www/phpunit.xml

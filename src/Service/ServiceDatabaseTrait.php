@@ -20,6 +20,14 @@ trait ServiceDatabaseTrait
         return $this->driver;
     }
 
+    protected function serializeReference(BSONDocument $item): array
+    {
+        return array_merge($item->getArrayCopy(), [
+            '__unit' => (string)$item->getArrayCopy()['__unit'],
+            '_id' => (string)$item->getArrayCopy()['_id'],
+        ]);
+    }
+
     protected function serialize(BSONDocument $item): array
     {
         return array_merge($item->getArrayCopy(), [

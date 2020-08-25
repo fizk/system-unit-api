@@ -2,17 +2,15 @@
 
 // use Interop\Container\ContainerInterface;
 use Psr\Container\ContainerInterface;
-use Unit\Handler;
-use Unit\Service;
-use Unit\Event;
-
-use MongoDB\Client;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Phly\EventDispatcher\EventDispatcher;
 use Phly\EventDispatcher\ListenerProvider\AttachableListenerProvider;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use Unit\Handler;
+use Unit\Service;
+use Unit\Event;
 
 return [
     'factories' => [
@@ -61,6 +59,11 @@ return [
         },
         Handler\PostReference::class => function(ContainerInterface $container, $requestedName) {
             return (new Handler\PostReference())
+                ->setReferenceService($container->get(Service\Reference::class))
+                ;
+        },
+        Handler\GetReference::class => function(ContainerInterface $container, $requestedName) {
+            return (new Handler\GetReference())
                 ->setReferenceService($container->get(Service\Reference::class))
                 ;
         },
