@@ -20,7 +20,7 @@ class PostReference implements RequestHandlerInterface, ReferenceAware
 
         return (new EmptyResponse(
             201,
-            ['Location' => "/units/{$request->getAttribute('id')}/references/{$response}"]
+            ['Location' => "/units/{$request->getAttribute('unit_id')}/references/{$response}"]
         ));
     }
 
