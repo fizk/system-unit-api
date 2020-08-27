@@ -4,5 +4,5 @@ namespace Unit\Service;
 
 interface UnitAware
 {
-    public function setUnitService(Unit $service): self;
+    public function setUnitService(UnitInterface $service): self;
 }

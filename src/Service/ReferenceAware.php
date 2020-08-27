@@ -4,5 +4,5 @@ namespace Unit\Service;
 
 interface ReferenceAware
 {
-    public function setReferenceService(Reference $service): self;
+    public function setReferenceService(ReferenceInterface $service): self;
 }

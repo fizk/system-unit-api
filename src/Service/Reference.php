@@ -2,12 +2,13 @@
 
 namespace Unit\Service;
 
-use Unit\Service\DatabaseAware;
-use MongoDB\BSON\ObjectId;
-use Unit\Service\ServiceDatabaseTrait;
 use InvalidArgumentException;
+use MongoDB\BSON\ObjectId;
+use Unit\Service\DatabaseAware;
+use Unit\Service\ServiceDatabaseTrait;
+use Unit\Service\ReferenceInterface;
 
-class Reference implements DatabaseAware
+class Reference implements DatabaseAware, ReferenceInterface
 {
     use ServiceDatabaseTrait;
 

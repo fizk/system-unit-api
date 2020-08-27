@@ -19,66 +19,66 @@ return [
         },
         Handler\GetUnit::class => function(ContainerInterface $container, $requestedName) {
             return (new Handler\GetUnit())
-                ->setUnitService($container->get(Service\Unit::class))
+                ->setUnitService($container->get(Service\UnitInterface::class))
                 ;
         },
         Handler\GetUnits::class => function(ContainerInterface $container, $requestedName) {
             return (new Handler\GetUnits())
-                ->setUnitService($container->get(Service\Unit::class))
+                ->setUnitService($container->get(Service\UnitInterface::class))
                 ;
         },
         Handler\PostUnit::class => function(ContainerInterface $container, $requestedName) {
             return (new Handler\PostUnit())
-                ->setUnitService($container->get(Service\Unit::class))
+                ->setUnitService($container->get(Service\UnitInterface::class))
                 ;
         },
         Handler\PutUnit::class => function(ContainerInterface $container, $requestedName) {
             return (new Handler\PutUnit())
-                ->setUnitService($container->get(Service\Unit::class))
+                ->setUnitService($container->get(Service\UnitInterface::class))
                 ;
         },
         Handler\PatchUnit::class => function(ContainerInterface $container, $requestedName) {
             return (new Handler\PatchUnit())
-                ->setUnitService($container->get(Service\Unit::class))
+                ->setUnitService($container->get(Service\UnitInterface::class))
                 ;
         },
         Handler\DeleteUnit::class => function(ContainerInterface $container, $requestedName) {
             return (new Handler\DeleteUnit())
-                ->setUnitService($container->get(Service\Unit::class))
+                ->setUnitService($container->get(Service\UnitInterface::class))
                 ;
         },
         Handler\GetFromReference::class => function(ContainerInterface $container, $requestedName) {
             return (new Handler\GetFromReference())
-                ->setReferenceService($container->get(Service\Reference::class))
+                ->setReferenceService($container->get(Service\ReferenceInterface::class))
                 ;
         },
         Handler\PutReference::class => function(ContainerInterface $container, $requestedName) {
             return (new Handler\PutReference())
-                ->setReferenceService($container->get(Service\Reference::class))
+                ->setReferenceService($container->get(Service\ReferenceInterface::class))
                 ;
         },
         Handler\PostReference::class => function(ContainerInterface $container, $requestedName) {
             return (new Handler\PostReference())
-                ->setReferenceService($container->get(Service\Reference::class))
+                ->setReferenceService($container->get(Service\ReferenceInterface::class))
                 ;
         },
         Handler\GetReference::class => function(ContainerInterface $container, $requestedName) {
             return (new Handler\GetReference())
-                ->setReferenceService($container->get(Service\Reference::class))
+                ->setReferenceService($container->get(Service\ReferenceInterface::class))
                 ;
         },
         Handler\DeleteReference::class => function(ContainerInterface $container, $requestedName) {
             return (new Handler\DeleteReference())
-                ->setReferenceService($container->get(Service\Reference::class))
+                ->setReferenceService($container->get(Service\ReferenceInterface::class))
                 ;
         },
 
-        Service\Unit::class => function (ContainerInterface $container, $requestedName) {
+        Service\UnitInterface::class => function (ContainerInterface $container, $requestedName) {
             return (new Service\Unit())
                 ->setDriver($container->get(Service\DatabaseAware::class))
                 ;
         },
-        Service\Reference::class => function (ContainerInterface $container, $requestedName) {
+        Service\ReferenceInterface::class => function (ContainerInterface $container, $requestedName) {
             return (new Service\Reference())
                 ->setDriver($container->get(Service\DatabaseAware::class))
                 ;

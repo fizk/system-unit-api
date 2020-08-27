@@ -6,11 +6,11 @@ use Laminas\Diactoros\Response\EmptyResponse;
 use Laminas\Diactoros\Response\JsonResponse;
 use Psr\Http\Message\{ResponseInterface, ServerRequestInterface};
 use Psr\Http\Server\RequestHandlerInterface;
-use Unit\Service\{ReferenceAware, Reference};
+use Unit\Service\{ReferenceAware, ReferenceInterface};
 
 class GetReference implements RequestHandlerInterface, ReferenceAware
 {
-    private Reference $referenceService;
+    private ReferenceInterface $referenceService;
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
@@ -24,7 +24,7 @@ class GetReference implements RequestHandlerInterface, ReferenceAware
             : new EmptyResponse(404);
     }
 
-    public function setReferenceService(Reference $service): self
+    public function setReferenceService(ReferenceInterface $service): self
     {
         $this->referenceService = $service;
         return $this;

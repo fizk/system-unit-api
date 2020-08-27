@@ -3,11 +3,12 @@
 namespace Unit\Service;
 
 use InvalidArgumentException;
-use Unit\Service\DatabaseAware;
 use MongoDB\BSON\ObjectId;
 use Unit\Service\ServiceDatabaseTrait;
+use Unit\Service\DatabaseAware;
+use Unit\Service\UnitInterface;
 
-class Unit implements DatabaseAware
+class Unit implements DatabaseAware, UnitInterface
 {
     use ServiceDatabaseTrait;
 
