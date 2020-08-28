@@ -21,17 +21,17 @@ class GetUnits implements RequestHandlerInterface, UnitAware
             }, explode(',', $queryParams['ids']));
             $response = $this->unitService->fetchDiscrete($idArray);
 
-            return new JsonResponse($response, 200);
+            return new JsonResponse($response, 200, ['Access-Control-Allow-Origin' => '*']);
         }
 
         if (key_exists('filter', $queryParams)) {
             $response = $this->unitService->fetch($queryParams['filter']);
 
-            return new JsonResponse($response, 200);
+            return new JsonResponse($response, 200, ['Access-Control-Allow-Origin' => '*']);
         }
 
         $response = $this->unitService->fetch();
-        return new JsonResponse($response, 200);
+        return new JsonResponse($response, 200, ['Access-Control-Allow-Origin' => '*']);
     }
 
     public function setUnitService(UnitInterface $service): self

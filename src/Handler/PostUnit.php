@@ -15,7 +15,10 @@ class PostUnit implements RequestHandlerInterface, UnitAware
     {
         $response = $this->unitService->post($request->getParsedBody());
         return $response
-            ? (new EmptyResponse(201))->withHeader('Location', "/units/{$response}")
+            ? (new EmptyResponse(201, [
+                'Access-Control-Allow-Origin' => '*',
+                'Location' => "/units/{$response}"
+            ]))
             : new EmptyResponse(400);
     }
 

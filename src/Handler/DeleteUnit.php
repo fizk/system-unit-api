@@ -15,8 +15,8 @@ class DeleteUnit implements RequestHandlerInterface, UnitAware
     {
         $response = $this->unitService->delete($request->getAttribute('unit_id'));
         return $response
-            ? new EmptyResponse(204)
-            : new EmptyResponse(404);
+            ? new EmptyResponse(204, ['Access-Control-Allow-Origin' => '*'])
+            : new EmptyResponse(404, ['Access-Control-Allow-Origin' => '*']);
     }
 
     public function setUnitService(UnitInterface $service): self

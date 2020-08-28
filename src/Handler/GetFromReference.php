@@ -17,7 +17,7 @@ class GetFromReference implements RequestHandlerInterface, ReferenceAware
             $request->getAttribute('ref_id'),
             key_exists('filter', $request->getQueryParams()) ? $request->getQueryParams()['filter'] : null
         );
-        return new JsonResponse($response, 200);
+        return new JsonResponse($response, 200, ['Access-Control-Allow-Origin' => '*']);
     }
 
     public function setReferenceService(ReferenceInterface $service): self

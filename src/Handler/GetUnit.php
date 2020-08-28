@@ -16,8 +16,8 @@ class GetUnit implements RequestHandlerInterface, UnitAware
     {
         $response = $this->unitService->get($request->getAttribute('unit_id'));
         return $response
-            ? new JsonResponse($response, 200)
-            : new EmptyResponse(404) ;
+            ? new JsonResponse($response, 200, ['Access-Control-Allow-Origin' => '*'])
+            : new EmptyResponse(404, ['Access-Control-Allow-Origin' => '*']) ;
     }
 
     public function setUnitService(UnitInterface $service): self

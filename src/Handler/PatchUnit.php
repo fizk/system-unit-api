@@ -18,8 +18,8 @@ class PatchUnit implements RequestHandlerInterface, UnitAware
             $request->getParsedBody()
         );
         return $response
-            ? new EmptyResponse(204)
-            : new EmptyResponse(400);
+            ? new EmptyResponse(204, ['Access-Control-Allow-Origin' => '*'])
+            : new EmptyResponse(400, ['Access-Control-Allow-Origin' => '*']);
     }
 
     public function setUnitService(UnitInterface $service): self

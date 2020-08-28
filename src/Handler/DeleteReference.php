@@ -13,7 +13,7 @@ class DeleteReference implements RequestHandlerInterface, ReferenceAware
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return new EmptyResponse(405);
+        return new EmptyResponse(405, ['Access-Control-Allow-Origin' => '*']);
     }
 
     public function setReferenceService(ReferenceInterface $service): self

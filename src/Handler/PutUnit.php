@@ -20,11 +20,11 @@ class PutUnit implements RequestHandlerInterface, UnitAware
 
         switch ($response) {
             case -1:
-                return new EmptyResponse(400);
+                return new EmptyResponse(400, ['Access-Control-Allow-Origin' => '*']);
             case 0:
-                return new EmptyResponse(204);
+                return new EmptyResponse(204, ['Access-Control-Allow-Origin' => '*']);
             case 1:
-                return new EmptyResponse(201);
+                return new EmptyResponse(201, ['Access-Control-Allow-Origin' => '*']);
         }
     }
 

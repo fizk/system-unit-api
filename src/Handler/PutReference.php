@@ -23,11 +23,11 @@ class PutReference implements RequestHandlerInterface, ReferenceAware
 
         switch ($response) {
             case -1:
-                return new EmptyResponse(400);
+                return new EmptyResponse(400, ['Access-Control-Allow-Origin' => '*']);
             case 0:
-                return new EmptyResponse(200);
+                return new EmptyResponse(200, ['Access-Control-Allow-Origin' => '*']);
             case 1:
-                return new EmptyResponse(204);
+                return new EmptyResponse(204, ['Access-Control-Allow-Origin' => '*']);
         }
     }
 
