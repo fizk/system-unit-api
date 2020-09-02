@@ -6,6 +6,9 @@ use PHPUnit\Framework\TestCase;
 use MongoDB\Database;
 use MongoDB\Client;
 use MongoDB\BSON\ObjectId;
+use Unit\Event\UnitUpdateEvent;
+use Unit\Event\UnitViewEvent;
+use Unit\Tests\Event\PreserveEvent;
 
 class ReferenceTest extends TestCase
 {
@@ -32,7 +35,10 @@ class ReferenceTest extends TestCase
                 ],
             ]);
 
-        $service = (new Reference())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Reference())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
         $expected = [
             '__unit' => '5f3cd6ef1950f736948b9ca4',
             '_id' => '5f3ef8b2412bd93b4c41835f',
@@ -41,6 +47,7 @@ class ReferenceTest extends TestCase
         $actual = $service->get('5f3c539b711e4cc306ac2b87', '5f3ef8b2412bd93b4c41835f');
 
         $this->assertEquals($expected, $actual);
+        $this->assertInstanceOf(UnitViewEvent::class, $events->getLastEvent());
     }
 
     public function testFetchSuccess()
@@ -63,7 +70,10 @@ class ReferenceTest extends TestCase
             ],
         ]);
 
-        $service = (new Reference())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Reference())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
         $expected = [
             ['_id' => '5f3c539b711e4cc306ac2b87', '__ref' => [
                 ['__unit' => '5f3cd6ef1950f736948b9ca4', '_id' => '5f3ef8b2412bd93b4c41835f'],
@@ -73,6 +83,7 @@ class ReferenceTest extends TestCase
         $actual = $service->fetch('5f3cd6ef1950f736948b9ca4');
 
         $this->assertEquals($expected, $actual);
+        $this->assertInstanceOf(UnitViewEvent::class, $events->getLastEvent());
     }
 
     public function testFetchFilter()
@@ -95,7 +106,10 @@ class ReferenceTest extends TestCase
             ],
         ]);
 
-        $service = (new Reference())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Reference())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
         $expected = [
             ['_id' => '5f3c53af4fb5eebf643c891e', '__ref' => [
                 ['__unit' => '5f3cd6ef1950f736948b9ca4', '__mime' => 'member/member', '_id' => '5f3ef8b2412bd93b4c41835f'],
@@ -105,6 +119,7 @@ class ReferenceTest extends TestCase
         $actual = $service->fetch('5f3cd6ef1950f736948b9ca4', 'member/.*');
 
         $this->assertEquals($expected, $actual);
+        $this->assertInstanceOf(UnitViewEvent::class, $events->getLastEvent());
     }
 
     public function testPost()
@@ -122,12 +137,11 @@ class ReferenceTest extends TestCase
                 ],
             ]);
 
-        $service = (new Reference())->setDriver($this->client);
-        $expected = [
-            ['_id' => '5f3c539b711e4cc306ac2b87', '__ref' => [
-                ['__unit' => '5f3cd6ef1950f736948b9ca4', '_id' => '5f3ef8b2412bd93b4c41835f'],
-            ]]
-        ];
+        $events = new PreserveEvent();
+        $service = (new Reference())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
+
         $actual = $service->post('5f3c539b711e4cc306ac2b87', ['__mime' => 'some/mime', '__unit' => '5f3efa510bee956dce5ab829']);
 
         $references = $this->client->selectCollection('unit')->find([])->toArray()[0]->getArrayCopy()['__ref']->getArrayCopy();
@@ -135,6 +149,7 @@ class ReferenceTest extends TestCase
         $this->assertCount(2, $references);
         $this->assertEquals($actual, (string) $references[1]->getArrayCopy()['_id']);
         $this->assertEquals('5f3efa510bee956dce5ab829', (string) $references[1]->getArrayCopy()['__unit']);
+        $this->assertInstanceOf(UnitUpdateEvent::class, $events->getLastEvent());
     }
 
     public function testPut()
@@ -162,7 +177,10 @@ class ReferenceTest extends TestCase
             ['_id' => new ObjectId('5f3c53af4fb5eebf643c891e'), 'field' => 'value', '__ref' => []],
         ]);
 
-        $service = (new Reference())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Reference())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
         $service->put(
             '5f3f1439ad8de72bd908a8a9',
             [
@@ -191,6 +209,8 @@ class ReferenceTest extends TestCase
         $this->assertEquals('5f3f146c6b5d16562ffad8b4', (string)$result[2]->getArrayCopy()['__unit']);
         $this->assertEquals('some/three', (string)$result[2]->getArrayCopy()['__mime']);
         $this->assertEquals('5f3f1472ace60966bc54a5a8', (string)$result[2]->getArrayCopy()['_id']);
+
+        $this->assertInstanceOf(UnitUpdateEvent::class, $events->getLastEvent());
     }
 
     protected function setUp(): void

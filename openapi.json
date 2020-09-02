@@ -1,0 +1,462 @@
+{
+    "components": {
+        "schemas": {
+            "Reference": {
+                "additionalProperties": true,
+                "properties": {
+                    "__mime": {
+                        "type": "string"
+                    },
+                    "__unit": {
+                        "type": "string"
+                    },
+                    "_id": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ReferenceForm": {
+                "additionalProperties": true,
+                "properties": {
+                    "__mime": {
+                        "type": "string"
+                    },
+                    "__unit": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Unit": {
+                "additionalProperties": true,
+                "properties": {
+                    "__mime": {
+                        "type": "string"
+                    },
+                    "__ref": {
+                        "items": {
+                            "$ref": "#/components/schemas/Reference"
+                        },
+                        "type": "array"
+                    },
+                    "_id": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UnitForm": {
+                "additionalProperties": true,
+                "properties": {
+                    "__mime": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "info": {
+        "description": "The Unit API",
+        "title": "Unit API",
+        "version": "1.0.0"
+    },
+    "openapi": "3.0.0",
+    "paths": {
+        "/references/{ref_id}": {
+            "get": {
+                "description": "Find all Units that have a reference to `ref_id`. Additnal filter can be provided",
+                "parameters": [
+                    {
+                        "description": "id of the Reference",
+                        "in": "path",
+                        "name": "ref_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "__mime RegEx",
+                        "in": "query",
+                        "name": "filter",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/Unit"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "description"
+                    }
+                },
+                "summary": "Get Parent of a reference"
+            }
+        },
+        "/units": {
+            "get": {
+                "description": "Queries for all Unit in the database, additional filter can be provided to filter on MIME types",
+                "parameters": [
+                    {
+                        "description": "RegEx string",
+                        "in": "query",
+                        "name": "filter",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Comma sererated list of IDs to fetch",
+                        "in": "query",
+                        "name": "ids",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "items": {
+                                        "$ref": "#/components/schemas/Unit"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "description": "Returns an array of Units"
+                    }
+                },
+                "summary": "Get al Units"
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UnitForm"
+                            }
+                        }
+                    },
+                    "description": "Requires the __mime type (and additional properties)",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Returns an empty response, with a HTTP Header Location property",
+                        "headers": {
+                            "Location": {
+                                "description": "URL",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Client side error"
+                    }
+                },
+                "summary": "Create new Unit"
+            }
+        },
+        "/units/{unit_id}": {
+            "delete": {
+                "description": "Deletes on Unit by ID",
+                "parameters": [
+                    {
+                        "description": "id of the Unit",
+                        "in": "path",
+                        "name": "unit_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    },
+                    "404": {
+                        "description": "Unit not found"
+                    }
+                },
+                "summary": "Delete Unit"
+            },
+            "get": {
+                "description": "Queries for one Unit by unit_id",
+                "parameters": [
+                    {
+                        "description": "id of the Unit",
+                        "in": "path",
+                        "name": "unit_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Unit"
+                                }
+                            }
+                        },
+                        "description": "Returns one Unit"
+                    },
+                    "404": {
+                        "description": "Unit not found"
+                    }
+                },
+                "summary": "Get on Unit"
+            },
+            "patch": {
+                "description": "All fields are optional, only fields provided will be updated",
+                "parameters": [
+                    {
+                        "description": "id of the Unit",
+                        "in": "path",
+                        "name": "unit_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UnitForm"
+                            }
+                        }
+                    },
+                    "description": "All fields are optional",
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "Updated"
+                    },
+                    "400": {
+                        "description": "Client error"
+                    }
+                },
+                "summary": "Update Unit"
+            },
+            "put": {
+                "description": "Tries to update a Unit, but creates it if not found",
+                "parameters": [
+                    {
+                        "description": "id of the Unit",
+                        "in": "path",
+                        "name": "unit_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UnitForm"
+                            }
+                        }
+                    },
+                    "description": "Requires MIME type (and additional properties)",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "204": {
+                        "description": "Updated"
+                    },
+                    "400": {
+                        "description": "Client error"
+                    }
+                },
+                "summary": "Create or update"
+            }
+        },
+        "/units/{unit_id}/references": {
+            "post": {
+                "description": "Parent Unit is unit_id, additional __unit param is required in the payload",
+                "parameters": [
+                    {
+                        "description": "id of the Unit",
+                        "in": "path",
+                        "name": "unit_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReferenceForm"
+                            }
+                        }
+                    },
+                    "description": "__unit is the child Unit",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Link created",
+                        "headers": {
+                            "Location": {
+                                "description": "URL / location of the new reference",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Client error"
+                    }
+                },
+                "summary": "Link Units together"
+            }
+        },
+        "/units/{unit_id}/references/{ref_id}": {
+            "delete": {
+                "description": "Currently not implemented",
+                "parameters": [
+                    {
+                        "description": "id of the Unit",
+                        "in": "path",
+                        "name": "unit_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "id of the Reference",
+                        "in": "path",
+                        "name": "ref_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "403": {
+                        "description": "not allowed"
+                    }
+                },
+                "summary": "Delete one Reference / Link"
+            },
+            "get": {
+                "description": "Will return the reference object inside a Parent Unit",
+                "parameters": [
+                    {
+                        "description": "id of the Unit",
+                        "in": "path",
+                        "name": "unit_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "id of the Reference",
+                        "in": "path",
+                        "name": "ref_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Reference"
+                                }
+                            }
+                        },
+                        "description": "Reference found"
+                    },
+                    "404": {
+                        "description": "Reference not found"
+                    }
+                },
+                "summary": "Query for one reference"
+            },
+            "put": {
+                "parameters": [
+                    {
+                        "description": "id of the Unit",
+                        "in": "path",
+                        "name": "unit_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "id of the Reference",
+                        "in": "path",
+                        "name": "ref_id",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReferenceForm"
+                            }
+                        }
+                    },
+                    "description": "__unit and __mime are required",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Client error"
+                    }
+                },
+                "summary": "Update meta-data in Link / Reference"
+            }
+        }
+    },
+    "servers": [
+        {
+            "description": "URL description",
+            "url": "http://localhost:8081"
+        }
+    ]
+}

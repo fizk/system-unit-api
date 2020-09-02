@@ -20,7 +20,7 @@ class GetReference implements RequestHandlerInterface, ReferenceAware
         );
 
         return $response
-            ? new JsonResponse($response, 200, ['Access-Control-Allow-Origin', '*'])
+            ? new JsonResponse($response, 200, ['Access-Control-Allow-Origin' => '*'])
             : new EmptyResponse(404, ['Access-Control-Allow-Origin' => '*']);
     }
 

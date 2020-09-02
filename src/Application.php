@@ -2,16 +2,16 @@
 
 namespace Unit;
 
-use Psr\EventDispatcher\EventDispatcherInterface;
 use Laminas\ServiceManager\ServiceLocatorInterface;
-use Laminas\Diactoros\Response\JsonResponse;
 use Laminas\HttpHandlerRunner\Emitter\EmitterInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use Highway\{Route, RouteCollection};
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Unit\Event\SystemError;
 use Throwable;
 use Exception;
 use Error;
+use Unit\Response\ErrorJsonResponse;
 
 class Application
 {
@@ -36,46 +36,23 @@ class Application
                 }
             }
 
-            $this->emitter->emit($collection->find($request)->dispatch($request));
+            $this->emitter
+                ->emit($collection->find($request)->dispatch($request));
         } catch (Exception $e) {
-            $this->container->get(EventDispatcherInterface::class)->dispatch(new SystemError($e, 'EXCEPTION'));
-            $this->emitter->emit(new JsonResponse(
-                [
-                    'message' => $e->getMessage(),
-                    'code' => $e->getCode(),
-                    'path' => "{$e->getFile()}:{$e->getLine()}",
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => $e->getTrace()
-                ],
-                $e->getCode() > 199 ? $e->getCode() : 400
-            ));
+            $this->container->get(EventDispatcherInterface::class)
+                ->dispatch(new SystemError($request, $e, 'EXCEPTION'));
+            $this->emitter
+                ->emit(new ErrorJsonResponse($e, $e->getCode() > 199 ? $e->getCode() : 400));
         } catch (Error $e) {
-            $this->container->get(EventDispatcherInterface::class)->dispatch(new SystemError($e, 'ERROR'));
-            $this->emitter->emit(new JsonResponse(
-                [
-                    'message' => $e->getMessage(),
-                    'code' => $e->getCode(),
-                    'path' => "{$e->getFile()}:{$e->getLine()}",
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => $e->getTrace()
-                ],
-                $e->getCode() > 199 ? $e->getCode() : 500
-            ));
+            $this->container->get(EventDispatcherInterface::class)
+                ->dispatch(new SystemError($request, $e, 'ERROR'));
+            $this->emitter
+                ->emit(new ErrorJsonResponse($e, $e->getCode() > 199 ? $e->getCode() : 500));
         } catch (Throwable $e) {
-            $this->container->get(EventDispatcherInterface::class)->dispatch(new SystemError($e, 'SYSTEM'));
-            $this->emitter->emit(new JsonResponse(
-                [
-                    'message' => $e->getMessage(),
-                    'code' => $e->getCode(),
-                    'path' => "{$e->getFile()}:{$e->getLine()}",
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => $e->getTrace()
-                ],
-                500
-            ));
+            $this->container->get(EventDispatcherInterface::class)
+                ->dispatch(new SystemError($request, $e, 'SYSTEM'));
+            $this->emitter
+                ->emit(new ErrorJsonResponse($e, 500));
         }
     }
 }

@@ -6,6 +6,11 @@ use PHPUnit\Framework\TestCase;
 use MongoDB\Database;
 use MongoDB\Client;
 use MongoDB\BSON\ObjectId;
+use Unit\Event\UnitCreateEvent;
+use Unit\Event\UnitDeleteEvent;
+use Unit\Event\UnitUpdateEvent;
+use Unit\Event\UnitViewEvent;
+use Unit\Tests\Event\PreserveEvent;
 
 class UnitTest extends TestCase
 {
@@ -19,7 +24,10 @@ class UnitTest extends TestCase
                 ['_id' => new ObjectId('5f3c53af4fb5eebf643c891e'), 'field' =>'value', '__ref' => []],
             ]);
 
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
 
         $expected = [
             '_id' => '5f3c539b711e4cc306ac2b87',
@@ -29,6 +37,7 @@ class UnitTest extends TestCase
         $actual = $service->get('5f3c539b711e4cc306ac2b87');
 
         $this->assertEquals($expected, $actual);
+        $this->assertInstanceOf(UnitViewEvent::class, $events->getLastEvent());
     }
 
     public function testGetNotFound()
@@ -39,17 +48,24 @@ class UnitTest extends TestCase
                 ['_id' => new ObjectId('5f3c53af4fb5eebf643c891e'), 'field' =>'value', '__ref' => []],
             ]);
 
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
 
         $expected = null;
         $actual = $service->get('5f3c539b711e4cc306ac2123');
 
         $this->assertEquals($expected, $actual);
+        $this->assertNull($events->getLastEvent());
     }
 
     public function testPutCreate()
     {
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
 
         $expected = 1;
         $actual = $service->put(
@@ -58,6 +74,7 @@ class UnitTest extends TestCase
         );
 
         $this->assertEquals($expected, $actual);
+        $this->assertInstanceOf(UnitCreateEvent::class, $events->getLastEvent());
     }
 
     public function testPutMimeMissing()
@@ -78,12 +95,16 @@ class UnitTest extends TestCase
             ['_id' => new ObjectId('5f3c53af4fb5eebf643c891e'), 'field' =>'value', '__mime' =>'some/mime', '__ref' => []],
         ]);
 
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
 
         $expected = 0;
         $actual = $service->put('5f3c539b711e4cc306ac2123', ['filed' =>'new value', '__mime' => 'some/mime']);
 
         $this->assertEquals($expected, $actual);
+        $this->assertInstanceOf(UnitUpdateEvent::class, $events->getLastEvent());
     }
 
     public function testPutUpdateNoChange()
@@ -94,12 +115,16 @@ class UnitTest extends TestCase
             ['_id' => new ObjectId('5f3c53af4fb5eebf643c891e'), 'field' =>'value', '__mime' =>'some/mime', '__ref' => []],
         ]);
 
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
 
         $expected = 0;
         $actual = $service->put('5f3c539b711e4cc306ac2123', ['filed' =>'value', '__mime' => 'some/mime']);
 
         $this->assertEquals($expected, $actual);
+        $this->assertInstanceOf(UnitUpdateEvent::class, $events->getLastEvent());
     }
 
     public function testPatchAddField()
@@ -109,7 +134,10 @@ class UnitTest extends TestCase
                 ['_id' => new ObjectId('5f3c539b711e4cc306ac2123'), 'field' =>'value', '__mime' =>'some/mime', '__ref' => []],
                 ['_id' => new ObjectId('5f3c53af4fb5eebf643c891e'), 'field' =>'value', '__mime' =>'some/mime', '__ref' => []],
             ]);
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
 
         $writeResult = $service->patch('5f3c539b711e4cc306ac2123', ['new_filed' => 'new-value']);
 
@@ -121,6 +149,7 @@ class UnitTest extends TestCase
         $this->assertEquals('new-value', $result->getArrayCopy()['new_filed']);
 
         $this->assertEquals(1, $writeResult);
+        $this->assertInstanceOf(UnitUpdateEvent::class, $events->getLastEvent());
     }
 
     public function testPatchUpdateField()
@@ -130,7 +159,10 @@ class UnitTest extends TestCase
                 ['_id' => new ObjectId('5f3c539b711e4cc306ac2123'), 'field' =>'value', '__mime' =>'some/mime', '__ref' => []],
                 ['_id' => new ObjectId('5f3c53af4fb5eebf643c891e'), 'field' =>'value', '__mime' =>'some/mime', '__ref' => []],
             ]);
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
 
         $writeResult = $service->patch('5f3c539b711e4cc306ac2123', ['field' => 'new value']);
 
@@ -139,6 +171,7 @@ class UnitTest extends TestCase
 
         $this->assertEquals('new value', $result->getArrayCopy()['field']);
         $this->assertEquals(1, $writeResult);
+        $this->assertInstanceOf(UnitUpdateEvent::class, $events->getLastEvent());
     }
 
     public function testPatchNoUpdate()
@@ -148,14 +181,22 @@ class UnitTest extends TestCase
                 ['_id' => new ObjectId('5f3c539b711e4cc306ac2123'), 'field' =>'value', '__mime' =>'some/mime', '__ref' => []],
                 ['_id' => new ObjectId('5f3c53af4fb5eebf643c891e'), 'field' =>'value', '__mime' =>'some/mime', '__ref' => []],
             ]);
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
+
         $writeResult = $service->patch('5f3c539b711e4cc306ac2123', ['field' => 'value']);
         $this->assertEquals(0, $writeResult);
+        $this->assertNull($events->getLastEvent());
     }
 
     public function testPatchUnitNotFound()
     {
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
 
         $writeResult = $service->patch('5f3c539b711e4cc306ac2123', ['field' => 'value']);
 
@@ -164,11 +205,15 @@ class UnitTest extends TestCase
 
         $this->assertEquals($expected, $actual);
         $this->assertEquals(0, $writeResult);
+        $this->assertNull($events->getLastEvent());
     }
 
     public function testPost()
     {
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
 
         $expected = 1;
         $id = $service->post(['filed' => 'value', '__mime' => 'some/mime']);
@@ -176,6 +221,7 @@ class UnitTest extends TestCase
 
         $this->assertCount($expected, $actual);
         $this->assertMatchesRegularExpression('/^[a-f\d]{24}$/i', $id);
+        $this->assertInstanceOf(UnitCreateEvent::class, $events->getLastEvent());
     }
 
     public function testPostMissingMime()
@@ -193,11 +239,15 @@ class UnitTest extends TestCase
             ['_id' => new ObjectId('5f3c53af4fb5eebf643c891e'), 'field' =>'value', '__ref' => []],
         ]);
 
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
         $result = $service->delete('5f3c539b711e4cc306ac2b87');
 
         $this->assertCount(1, $this->client->selectCollection('unit')->find());
         $this->assertEquals(1, $result);
+        $this->assertInstanceOf(UnitDeleteEvent::class, $events->getLastEvent());
     }
 
     public function testDeleteNotFound()
@@ -208,11 +258,15 @@ class UnitTest extends TestCase
             ['_id' => new ObjectId('5f3c53af4fb5eebf643c891e'), 'field' =>'value', '__ref' => []],
         ]);
 
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
         $result = $service->delete('5f3c539b711e4cc306ac2b10');
 
         $this->assertCount(2, $this->client->selectCollection('unit')->find());
         $this->assertEquals(0, $result);
+        $this->assertNull($events->getLastEvent());
     }
 
     public function testFetch()
@@ -223,10 +277,14 @@ class UnitTest extends TestCase
             ['_id' => new ObjectId('5f3c53af4fb5eebf643c891e'), 'field' =>'value', '__ref' => []],
         ]);
 
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
         $result = $service->fetch();
 
         $this->assertCount(2, $this->client->selectCollection('unit')->find());
+        $this->assertInstanceOf(UnitViewEvent::class, $events->getLastEvent());
     }
 
     public function testFetchFilter()
@@ -240,7 +298,10 @@ class UnitTest extends TestCase
             ['_id' => new ObjectId('5f3c53af4fb5eebf643c8913'), '__mime' =>'artist/producer+mixing', '__ref' => []],
         ]);
 
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
 
         $this->assertCount(2, $service->fetch('album.*'));
         $this->assertCount(1, $service->fetch('album/album'));
@@ -251,6 +312,8 @@ class UnitTest extends TestCase
         $this->assertCount(3, $service->fetch('artist/.*'));
         $this->assertCount(2, $service->fetch('artist/producer.*'));
         $this->assertCount(1, $service->fetch('artist/.*mixing'));
+
+        $this->assertInstanceOf(UnitViewEvent::class, $events->getLastEvent());
     }
 
     public function testFetchDiscrete()
@@ -264,7 +327,10 @@ class UnitTest extends TestCase
                 ['_id' => new ObjectId('5f3c53af4fb5eebf643c8913'), '__mime' =>'artist/producer+mixing', '__ref' => []],
         ]);
 
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
 
         $actual = $service->fetchDiscrete(['5f3c539b711e4cc306ac2b87', '5f3c53af4fb5eebf643c8914']);
         $expected = [
@@ -272,6 +338,7 @@ class UnitTest extends TestCase
             ['_id' => '5f3c53af4fb5eebf643c8914', '__mime' =>'artist/producer', '__ref' => []],
         ];
         $this->assertEquals($expected, $actual);
+        $this->assertInstanceOf(UnitViewEvent::class, $events->getLastEvent());
     }
 
     public function testFetchDiscreteWithAGaps()
@@ -285,7 +352,10 @@ class UnitTest extends TestCase
                 ['_id' => new ObjectId('5f3c53af4fb5eebf643c8913'), '__mime' =>'artist/producer+mixing', '__ref' => []],
         ]);
 
-        $service = (new Unit())->setDriver($this->client);
+        $events = new PreserveEvent();
+        $service = (new Unit())
+            ->setDriver($this->client)
+            ->setEventDispatcher($events);
 
         $actual = $service->fetchDiscrete([
             '5f3c539b711e4cc306ac2b87',
@@ -298,6 +368,7 @@ class UnitTest extends TestCase
             ['_id' => '5f3c53af4fb5eebf643c8914', '__mime' =>'artist/producer', '__ref' => []],
         ];
         $this->assertEquals($expected, $actual);
+        $this->assertInstanceOf(UnitViewEvent::class, $events->getLastEvent());
     }
 
     protected function setUp(): void

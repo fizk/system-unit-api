@@ -76,11 +76,13 @@ return [
         Service\UnitInterface::class => function (ContainerInterface $container, $requestedName) {
             return (new Service\Unit())
                 ->setDriver($container->get(Service\DatabaseAware::class))
+                ->setEventDispatcher($container->get(EventDispatcherInterface::class))
                 ;
         },
         Service\ReferenceInterface::class => function (ContainerInterface $container, $requestedName) {
             return (new Service\Reference())
                 ->setDriver($container->get(Service\DatabaseAware::class))
+                ->setEventDispatcher($container->get(EventDispatcherInterface::class))
                 ;
         },
         Service\DatabaseAware::class => function (ContainerInterface $container, $requestedName) {
@@ -100,12 +102,7 @@ return [
         EventDispatcherInterface::class => function (ContainerInterface $container, $requestedName) {
             $logger = $container->get(LoggerInterface::class);
             $provider = new AttachableListenerProvider();
-            $provider->listen(Event\ServiceError::class, function (Event\ServiceError $event) use ($logger) : void {
-                $logger->error((string) $event);
-            });
-            $provider->listen(Event\EntryView::class, function (Event\EntryView $event) use ($logger) : void {
-                $logger->info((string) $event);
-            });
+
             $provider->listen(Event\SystemError::class, function (Event\SystemError $event) use ($logger) : void {
                 $logger->error((string) $event);
             });
@@ -113,7 +110,7 @@ return [
             return new EventDispatcher($provider);
         },
         LoggerInterface::class => function (ContainerInterface $container, $requestedName) {
-            $log = new Logger('user-api');
+            $log = new Logger('unit-api');
             $log->pushHandler(new StreamHandler('php://stdout', Logger::DEBUG));
             return $log;
         },

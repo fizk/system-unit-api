@@ -4,13 +4,19 @@ namespace Unit\Service;
 
 use InvalidArgumentException;
 use MongoDB\BSON\ObjectId;
+use Unit\Event\EventDispatcherAware;
+use Unit\Event\UnitCreateEvent;
+use Unit\Event\UnitDeleteEvent;
+use Unit\Event\UnitUpdateEvent;
+use Unit\Event\UnitViewEvent;
 use Unit\Service\ServiceDatabaseTrait;
 use Unit\Service\DatabaseAware;
 use Unit\Service\UnitInterface;
 
-class Unit implements DatabaseAware, UnitInterface
+class Unit implements UnitInterface, DatabaseAware, EventDispatcherAware
 {
     use ServiceDatabaseTrait;
+    use ServiceEventTrait;
 
     /**
      * @return array|null data
@@ -20,6 +26,8 @@ class Unit implements DatabaseAware, UnitInterface
         $result = $this->getDriver()->selectCollection('unit')->findOne([
             '_id' => new ObjectId($id)
         ]);
+
+        $result && $this->getEventDispatcher()->dispatch(new UnitViewEvent([$id]));
 
         return $result
             ? $this->serialize($result)
@@ -31,6 +39,8 @@ class Unit implements DatabaseAware, UnitInterface
         $request = $filter
             ? ['__mime' => ['$regex' => "^{$filter}$"]]
             : [];
+
+        $this->getEventDispatcher()->dispatch(new UnitViewEvent([], $filter));
 
         return array_map(function ($item) {
             return $this->serialize($item);
@@ -47,6 +57,8 @@ class Unit implements DatabaseAware, UnitInterface
             ->selectCollection('unit')
             ->find($request)
             ->toArray();
+
+        $this->getEventDispatcher()->dispatch(new UnitViewEvent($ids));
 
         return array_map(function ($item) use ($cursor) {
             foreach ($cursor as $i) {
@@ -80,9 +92,20 @@ class Unit implements DatabaseAware, UnitInterface
             ['upsert' => true]
         );
 
-        return $result->isAcknowledged()
-            ? $result->getUpsertedCount()
-            : -1;
+        ($result->isAcknowledged() && $result->getUpsertedCount() !== 0) &&
+            $this->getEventDispatcher()->dispatch(new UnitCreateEvent($id));
+        ($result->isAcknowledged() && $result->getModifiedCount() !== 0) &&
+            $this->getEventDispatcher()->dispatch(new UnitUpdateEvent($id));
+
+        if ($result->isAcknowledged()) {
+            if ($result->getUpsertedCount()) {
+                return 1;
+            }
+            if ($result->getModifiedCount()) {
+                return 0;
+            }
+            return -1;
+        }
     }
 
     /**
@@ -97,6 +120,9 @@ class Unit implements DatabaseAware, UnitInterface
         ], [
             '$set' => $data
         ]);
+
+        ($result->isAcknowledged() && $result->getModifiedCount()) &&
+            $this->getEventDispatcher()->dispatch(new UnitUpdateEvent($id));
 
         return $result->isAcknowledged()
             ? $result->getModifiedCount()
@@ -120,6 +146,10 @@ class Unit implements DatabaseAware, UnitInterface
         $response = $this->getDriver()->selectCollection('unit')->insertOne(
             array_merge($data, ['__ref' => []])
         );
+
+        $this->getEventDispatcher()
+            ->dispatch(new UnitCreateEvent($response->getInsertedId()));
+
         return (string) $response->getInsertedId();
     }
 
@@ -134,6 +164,9 @@ class Unit implements DatabaseAware, UnitInterface
         $result = $this->getDriver()->selectCollection('unit')->deleteOne([
             '_id' => new ObjectId($id)
         ]);
+
+        ($result->isAcknowledged() && $result->getDeletedCount()) &&
+            $this->getEventDispatcher()->dispatch(new UnitDeleteEvent($id));
 
         return $result->isAcknowledged()
             ? $result->getDeletedCount()

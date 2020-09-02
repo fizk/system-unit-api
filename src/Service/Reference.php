@@ -4,17 +4,20 @@ namespace Unit\Service;
 
 use InvalidArgumentException;
 use MongoDB\BSON\ObjectId;
+use Unit\Event\EventDispatcherAware;
+use Unit\Event\UnitUpdateEvent;
+use Unit\Event\UnitViewEvent;
 use Unit\Service\DatabaseAware;
 use Unit\Service\ServiceDatabaseTrait;
 use Unit\Service\ReferenceInterface;
 
-class Reference implements DatabaseAware, ReferenceInterface
+class Reference implements ReferenceInterface, DatabaseAware, EventDispatcherAware
 {
     use ServiceDatabaseTrait;
+    use ServiceEventTrait;
 
     public function get(string $unitId, string $refId): ?array
     {
-
         $result = $this->getDriver()->selectCollection('unit')->aggregate([
             ['$match' => ['_id' => new ObjectId($unitId)]],
             ['$project' => [
@@ -28,6 +31,7 @@ class Reference implements DatabaseAware, ReferenceInterface
         ]);
 
         $response = $result->toArray();
+        count($response) && $this->getEventDispatcher()->dispatch(new UnitViewEvent([$unitId]));
         return count($response)
             ? $this->serializeReference($response[0]->getArrayCopy()['shapes']->getArrayCopy()[0])
             : null ;
@@ -41,9 +45,17 @@ class Reference implements DatabaseAware, ReferenceInterface
             ]
         ]);
 
-        return array_map(function ($item) {
+        $units = array_map(function ($item) {
             return $this->serialize($item);
         }, $result->toArray());
+
+        $unitIds = array_map(function ($unit) {
+            return $unit['_id'];
+        }, $units);
+
+        $this->getEventDispatcher()->dispatch(new UnitViewEvent($unitIds));
+
+        return $units;
     }
 
     public function put(string $id, array $data): int
@@ -60,7 +72,7 @@ class Reference implements DatabaseAware, ReferenceInterface
             throw new InvalidArgumentException("Invalid mime type \"${$data['__mime']}\"", 400);
         }
 
-        $result = $this->getDriver()->selectCollection('unit')->updateOne(
+        $result = $this->getDriver()->selectCollection('unit')->findOneAndUpdate(
             ['__ref._id' => new ObjectId($id)],
             [
                 '$set' => ['__ref.$[filter]' => array_merge(
@@ -70,9 +82,11 @@ class Reference implements DatabaseAware, ReferenceInterface
             ],
             ['arrayFilters' => [[ "filter._id" => new ObjectId($id) ]]]
         );
+        $result && $this->getEventDispatcher()
+            ->dispatch(new UnitUpdateEvent((string) $result->getArrayCopy()['_id']));
 
-        return $result->isAcknowledged()
-            ? $result->getModifiedCount()
+        return $result
+            ? 1
             : -1 ;
     }
 
@@ -92,13 +106,15 @@ class Reference implements DatabaseAware, ReferenceInterface
 
         $identity = new ObjectId();
 
-        $this->getDriver()->selectCollection('unit')->findOneAndUpdate([
+        $response = $this->getDriver()->selectCollection('unit')->findOneAndUpdate([
             '_id' => new ObjectId($id)
         ], [
             '$addToSet' => [
                 '__ref' => array_merge($data, ['_id' => $identity, '__unit' => new ObjectId($data['__unit'])])
             ]
         ]);
+
+        $response && $this->getEventDispatcher()->dispatch(new UnitUpdateEvent($id));
 
         return (string) $identity;
     }
