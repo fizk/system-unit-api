@@ -5,7 +5,7 @@ namespace Unit\Event;
 use Psr\Http\Message\RequestInterface;
 use Throwable;
 
-class SystemError
+class ApplicationError
 {
     private Throwable $exception;
     private string $method;
@@ -41,7 +41,7 @@ class SystemError
             'path' => "{$this->exception->getFile()}:{$this->exception->getLine()}",
             'file' => $this->exception->getFile(),
             'line' => $this->exception->getLine(),
-            'trace' => $this->exception->getTrace()
+            'trace' => $this->exception->getTrace(),
         ]);
     }
 }

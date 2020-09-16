@@ -100,9 +100,16 @@ return [
         },
 
         EventDispatcherInterface::class => function (ContainerInterface $container, $requestedName) {
+            /** @var $logger Psr\Logger\LoggerInterface */
             $logger = $container->get(LoggerInterface::class);
             $provider = new AttachableListenerProvider();
 
+            $provider->listen(Event\RequestEvent::class, function (Event\RequestEvent $event) use ($logger) : void {
+                $logger->info((string) $event);
+            });
+            $provider->listen(Event\ApplicationError::class, function (Event\SystemError $event) use ($logger) : void {
+                $logger->warning((string) $event);
+            });
             $provider->listen(Event\SystemError::class, function (Event\SystemError $event) use ($logger) : void {
                 $logger->error((string) $event);
             });

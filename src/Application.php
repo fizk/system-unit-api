@@ -7,7 +7,7 @@ use Laminas\HttpHandlerRunner\Emitter\EmitterInterface;
 use Highway\{Route, RouteCollection};
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Unit\Event\SystemError;
+use Unit\Event\{ApplicationError, SystemError, RequestEvent};
 use Throwable;
 use Exception;
 use Error;
@@ -35,12 +35,13 @@ class Application
                     $collection->addRoute(new Route($verb, $route, $this->container->get($handler)));
                 }
             }
-
-            $this->emitter
-                ->emit($collection->find($request)->dispatch($request));
+            $response = $collection->find($request)->dispatch($request);
+            $this->emitter->emit($response);
+            $this->container->get(EventDispatcherInterface::class)
+                ->dispatch(new RequestEvent($request, $response));
         } catch (Exception $e) {
             $this->container->get(EventDispatcherInterface::class)
-                ->dispatch(new SystemError($request, $e, 'EXCEPTION'));
+                ->dispatch(new ApplicationError($request, $e, 'EXCEPTION'));
             $this->emitter
                 ->emit(new ErrorJsonResponse($e, $e->getCode() > 199 ? $e->getCode() : 400));
         } catch (Error $e) {

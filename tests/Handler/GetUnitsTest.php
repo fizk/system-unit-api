@@ -2,10 +2,13 @@
 
 namespace Unit\Handler;
 
+use Psr\Log\LoggerInterface;
 use Laminas\Diactoros\Response\JsonResponse;
+use Laminas\Diactoros\ServerRequest;
 use PHPUnit\Framework\TestCase;
-use Laminas\Diactoros\ServerRequestFactory;
+use Laminas\Diactoros\Uri;
 use Laminas\ServiceManager\ServiceManager;
+use Psr\Log\AbstractLogger;
 use Unit\Application;
 use Unit\Tests\Emitter;
 use Unit\Tests\Service\AbstractUnit;
@@ -26,13 +29,18 @@ class GetUnitsTest extends TestCase {
                 }
             };
         });
+        $this->container->setFactory(LoggerInterface::class, function () {
+            return new class extends AbstractLogger
+            {
+                public function log($level, $message, array $context = array())
+                {}
+            };
+        });
 
-        $request = ServerRequestFactory::fromGlobals([
-            'REQUEST_URI' => '/units',
-            'REQUEST_METHOD' => 'GET'
-        ], [
-            'ids' => ' 5f45a2f0d07e5b4ea70e3a03  , 5f45a2f0d07e5b4ea70e3a02 '
-        ]);
+        $request = (new ServerRequest())
+            ->withQueryParams(['ids' => ' 5f45a2f0d07e5b4ea70e3a03  , 5f45a2f0d07e5b4ea70e3a02 '])
+            ->withMethod('GET')
+            ->withUri(new Uri('/units'));
 
         (new Application($this->container, $this->emitter, $this->routes))->run($request);
 
